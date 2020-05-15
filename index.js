@@ -15,6 +15,7 @@ let status_input = document.querySelector("#status-input");
 
 submit_button.addEventListener("click", () => {
     parseFormInfo();
+    clearForm();
     closeForm();
     render();
 });
@@ -26,16 +27,28 @@ function parseFormInfo() {
     addBookToLibrary(newBook);
 }
 
+function clearForm() {
+    let inputs = Array.from(document.querySelectorAll(".form-container div input"));
+    inputs.forEach(input => {
+        input.checked = false;
+        if (input.value !== "") {
+            input.value = "";
+        }
+    });
+}
+
 function closeForm() {
     add_book_form.classList.remove("active");
     library_container.classList.remove("blur");
     library_name.classList.remove("blur");
+    document.body.style.backgroundColor = "white";
 }
 
 add_book_button.addEventListener("click", () => {
     add_book_form.classList.add("active");
     library_container.classList.add("blur");
     library_name.classList.add("blur");
+    document.body.style.backgroundColor = "#c9c9c9";
 });
 
 
@@ -73,6 +86,20 @@ function render() {
             new_book.classList.add("book");
             new_book.style.backgroundColor = cover_colors[Math.floor(Math.random() * cover_colors.length)];
 
+            let remove_btn = document.createElement("div");
+            remove_btn.classList.add("remove-button");
+            remove_btn.innerHTML = "X";
+
+            remove_btn.addEventListener("click", () => {
+                for (let i = 0; i < library.length; i++) {
+                    if (library[i].title === event.target.parentElement.children[2].innerHTML) {
+                        event.target.parentElement.parentElement.removeChild(event.target.parentElement);
+                        library.splice(i, 1);
+                    }
+                }
+                render();
+            });
+
             let binding = document.createElement("div");
             binding.classList.add("binding");
             binding.innerHTML = "&nbsp;";
@@ -88,15 +115,38 @@ function render() {
 
             let more_info = document.createElement("div");
             more_info.classList.add("more-info");
-            more_info.innerHTML = book.isRead ? book.pages + " pages (finished)" : book.pages + " pages";
+            more_info.innerHTML = book.pages + "&nbsp;pages&nbsp;&nbsp;&nbsp;";
 
+            let status_indicator = document.createElement("div");
+            status_indicator.classList.add("status-indicator");
+            if (book.isRead) {
+                status_indicator.innerHTML = "finished";
+                status_indicator.style.backgroundColor = "#4BCA81";
+            } else {
+                status_indicator.innerHTML = "in&nbsp;progress";
+                status_indicator.style.backgroundColor = "rgb(255, 169, 169)";
+            }
+
+            status_indicator.addEventListener("click", () => {
+                if (event.target.innerHTML === "finished") {
+                    event.target.innerHTML = "in&nbsp;progress";
+                    event.target.style.backgroundColor = "rgb(255, 169, 169)";
+                } else {
+                    event.target.innerHTML = "finished";
+                    event.target.style.backgroundColor = "#4BCA81";
+                }
+            });
+
+            more_info.appendChild(status_indicator);
+
+            new_book.appendChild(remove_btn);
             new_book.appendChild(binding);
             new_book.appendChild(title);
             new_book.appendChild(author);
             new_book.appendChild(more_info);
 
             library_container.insertBefore(new_book, add_book_button);
-            book.rendered=true;
+            book.rendered = true;
         }
     }
 }
